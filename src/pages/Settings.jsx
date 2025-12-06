@@ -7,6 +7,8 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     clinic_name: '',
+    doctor_name: '',
+    doctor_degree: '',
     clinic_phone: '',
     notification_sound_url: '',
     max_tokens_per_day: '',
@@ -33,6 +35,8 @@ const Settings = () => {
 
       setSettings({
         clinic_name: settingsMap.clinic_name || '',
+        doctor_name: settingsMap.doctor_name || '',
+        doctor_degree: settingsMap.doctor_degree || '',
         clinic_phone: settingsMap.clinic_phone || '',
         notification_sound_url: settingsMap.notification_sound_url || '',
         max_tokens_per_day: settingsMap.max_tokens_per_day || '50',
@@ -86,6 +90,8 @@ const Settings = () => {
   const getSettingDescription = (key) => {
     const descriptions = {
       clinic_name: 'Name of the clinic',
+      doctor_name: 'Name of the doctor',
+      doctor_degree: 'Degree of the doctor',
       clinic_phone: 'Contact phone number',
       notification_sound_url: 'URL for token change notification sound',
       max_tokens_per_day: 'Default maximum tokens per day',
@@ -188,6 +194,33 @@ const Settings = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Enter clinic name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Doctor Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="doctor_name"
+                    value={settings.doctor_name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Dr. Name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Doctor Degree
+                  </label>
+                  <input
+                    type="text"
+                    name="doctor_degree"
+                    value={settings.doctor_degree}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="MBBS, MD"
                   />
                 </div>
                 <div>

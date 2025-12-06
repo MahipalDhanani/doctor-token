@@ -30,11 +30,11 @@ const Header = ({ user, isAdmin, toggleSidebar, sidebarOpen }) => {
           </div>
 
           {/* Right side - User menu */}
-          <div className="flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4">
             {user ? (
               <>
                 <span className="text-sm text-gray-600">
-                  Hello, {user.email}
+                  Hello, {user.user_metadata.first_name} {user.user_metadata.last_name}
                 </span>
                 {isAdmin && (
                   <span className="bg-primary text-white px-2 py-1 rounded text-xs">

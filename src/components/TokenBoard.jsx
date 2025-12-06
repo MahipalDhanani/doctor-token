@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useClinicMeta, useTokens, useUserToken } from '../hooks/useTokens';
+import { useClinicMeta, useTokens, useUserToken, useClinicSettings } from '../hooks/useTokens';
 import { supabase, getCurrentUser, getUserProfile } from '../supabaseClient';
 import { voiceAnnouncement } from '../utils/voiceAnnouncement';
 import TokenCard from './TokenCard';
 
 const TokenBoard = ({ user }) => {
   const { clinicMeta, updateClinicMeta } = useClinicMeta();
+  const { clinic_name, clinic_phone, doctor_name, doctor_degree } = useClinicSettings();
+  const navigate = useNavigate();
   const { tokens, loading: tokensLoading, bookToken } = useTokens();
   const { userToken, loading: userTokenLoading } = useUserToken(user?.id);
   const [bookingToken, setBookingToken] = useState(false);
@@ -59,8 +62,9 @@ const TokenBoard = ({ user }) => {
       return;
     }
 
-    if (!userProfile) {
-      toast.error('Please complete your profile first');
+    if (!userProfile || !userProfile.first_name || !userProfile.last_name || !userProfile.mobile || !userProfile.address) {
+      toast.error('Please complete your profile (Name, Mobile, Address) to book a token');
+      navigate('/profile');
       return;
     }
 
@@ -131,9 +135,24 @@ const TokenBoard = ({ user }) => {
     <div className="w-full px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
-            Doctor Clinic Token Management
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-2">
+            {clinic_name}
           </h1>
+          {doctor_name && (
+            <h2 className="text-xl lg:text-2xl font-semibold text-primary mb-2">
+              {doctor_name}
+              {doctor_degree && (
+                <span className="text-lg lg:text-xl font-medium text-gray-600 ml-2">
+                  ({doctor_degree})
+                </span>
+              )}
+            </h2>
+          )}
+          {clinic_phone && (
+            <p className="text-lg text-gray-600 mb-4">
+              {clinic_phone}
+            </p>
+          )}
           
           {/* Doctor Status */}
           <div className="flex items-center justify-center space-x-4 mb-6">

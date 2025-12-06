@@ -171,11 +171,11 @@ export const useTokens = () => {
         },
         (payload) => {
           console.log('Token change received:', payload);
-          
+
           if (payload.eventType === 'INSERT') {
             setTokens(prev => [...prev, payload.new].sort((a, b) => a.token_number - b.token_number));
           } else if (payload.eventType === 'UPDATE') {
-            setTokens(prev => prev.map(token => 
+            setTokens(prev => prev.map(token =>
               token.id === payload.new.id ? payload.new : token
             ));
           } else if (payload.eventType === 'DELETE') {
@@ -195,11 +195,11 @@ export const useTokens = () => {
   const bookToken = async (userDetails, isAdminBooking = false) => {
     try {
       const today = getCurrentDateIST();
-      
+
       // Get next token number
       const { data: nextTokenData } = await supabase
         .rpc('get_next_token_number', { target_date: today });
-      
+
       const nextTokenNumber = nextTokenData || 1;
 
       const { data, error } = await supabase
@@ -265,4 +265,48 @@ export const useUserToken = (userId) => {
   }, [userId]);
 
   return { userToken, loading };
+};
+
+// Hook for fetching clinic settings (name, phone, doctor_name, doctor_degree)
+export const useClinicSettings = () => {
+  const [settings, setSettings] = useState({
+    clinic_name: 'Doctor Clinic Token Management',
+    doctor_name: '',
+    doctor_degree: '',
+    clinic_phone: '',
+    loading: true
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('*')
+          .in('key', ['clinic_name', 'clinic_phone', 'doctor_name', 'doctor_degree']);
+
+        if (error) throw error;
+
+        const settingsMap = {};
+        data?.forEach(setting => {
+          settingsMap[setting.key] = setting.value;
+        });
+
+        setSettings({
+          clinic_name: settingsMap.clinic_name || 'Doctor Clinic Token Management',
+          doctor_name: settingsMap.doctor_name || '',
+          doctor_degree: settingsMap.doctor_degree || '',
+          clinic_phone: settingsMap.clinic_phone || '',
+          loading: false
+        });
+      } catch (error) {
+        console.error('Error fetching clinic settings:', error);
+        setSettings(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  return settings;
 };

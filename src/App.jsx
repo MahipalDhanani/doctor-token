@@ -113,8 +113,9 @@ function App() {
               toggleSidebar={toggleSidebar}
               sidebarOpen={sidebarOpen}
             />
-            <div className="lg:flex lg:h-screen lg:pt-16">
+            <div className="pt-16 lg:flex lg:h-screen lg:pt-16">
               <Sidebar 
+                user={user}
                 isAdmin={isAdmin} 
                 isOpen={sidebarOpen}
                 toggleSidebar={toggleSidebar}

@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const Sidebar = ({ isAdmin, isOpen, toggleSidebar }) => {
+import { supabase } from '../supabaseClient';
+
+const Sidebar = ({ user, isAdmin, isOpen, toggleSidebar }) => {
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
   const location = useLocation();
 
   const navigation = [
@@ -72,12 +77,39 @@ const Sidebar = ({ isAdmin, isOpen, toggleSidebar }) => {
       {/* Sidebar */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
           lg:relative lg:translate-x-0 lg:flex lg:flex-col lg:w-64
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        <div className="flex flex-col h-full pt-16 lg:pt-0">
+        <div className="flex flex-col h-full lg:pt-0">
+          {/* Mobile Header & User Info */}
+          <div className="lg:hidden p-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xl font-bold text-primary">Menu</span>
+              <button 
+                onClick={toggleSidebar} 
+                className="p-2 -mr-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {user && (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                   <div className="flex-1 min-w-0">
+                     <p className="text-sm font-medium text-gray-900 truncate">
+                      {user.user_metadata.first_name} {user.user_metadata.last_name}
+                     </p>
+                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                   </div>
+                   {isAdmin && <span className="bg-primary text-white px-2 py-0.5 rounded text-xs">Admin</span>}
+                </div>
+              </div>
+            )}
+          </div>
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             {navigation.map((item) => (
@@ -134,6 +166,24 @@ const Sidebar = ({ isAdmin, isOpen, toggleSidebar }) => {
           
           {/* Footer */}
           <div className="flex-shrink-0 p-4 border-t border-gray-200">
+            <div className="lg:hidden mb-4">
+              {user ? (
+                 <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link 
+                  to="/auth" 
+                  className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-700"
+                  onClick={toggleSidebar}
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
             <p className="text-xs text-gray-500 text-center">
               Clinic Token Manager
             </p>
