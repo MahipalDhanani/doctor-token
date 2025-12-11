@@ -121,15 +121,12 @@ const AdminDashboard = () => {
 
   if (clinicMeta.loading || tokensLoading) {
     return (
-      <div className="w-full px-4 py-6 lg:py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6 lg:mb-8"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-lg shadow-md p-4 lg:p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </div>
+      <div className="w-full px-4 py-6 lg:py-8 max-w-7xl mx-auto">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="bg-white rounded-xl shadow-sm p-6 h-40"></div>
             ))}
           </div>
         </div>
@@ -138,35 +135,39 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="w-full px-4 py-6 lg:py-8">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 lg:mb-8 gap-4">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+    <div className="w-full px-4 py-6 lg:py-8 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage your clinic's daily operations</p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           {/* Tab Navigation */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-gray-100 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeTab === 'dashboard'
                   ? 'bg-white text-primary shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : 'text-gray-500 hover:text-gray-900'
               }`}
             >
               Dashboard
             </button>
             <button
               onClick={() => setActiveTab('analytics')}
-              className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeTab === 'analytics'
                   ? 'bg-white text-primary shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : 'text-gray-500 hover:text-gray-900'
               }`}
             >
               Analytics
             </button>
           </div>
-          <div className="text-xs lg:text-sm text-gray-600">
-            Date: {getCurrentDateIST()}
+          <div className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 font-medium whitespace-nowrap">
+            {getCurrentDateIST()}
           </div>
         </div>
       </div>
@@ -175,82 +176,97 @@ const AdminDashboard = () => {
       {activeTab === 'dashboard' ? (
         <>
           {/* Control Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
               {/* Doctor Availability */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                  Doctor Availability
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    clinicMeta.doctor_available 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between transition-shadow hover:shadow-md">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                    Availability
+                  </h3>
+                  <div className={`w-3 h-3 rounded-full ${clinicMeta.doctor_available ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                </div>
+                
+                <div className="flex items-center justify-between mt-auto">
+                  <span className={`text-lg font-bold ${
+                    clinicMeta.doctor_available ? 'text-green-700' : 'text-red-700'
                   }`}>
-                    {clinicMeta.doctor_available ? 'Available' : 'Unavailable'}
+                    {clinicMeta.doctor_available ? 'Online' : 'Offline'}
                   </span>
+                  
                   <button
                     onClick={toggleDoctorAvailability}
                     disabled={updating}
-                    className={`px-4 py-2 rounded-md text-white font-medium ${
-                      clinicMeta.doctor_available
-                        ? 'bg-red-600 hover:bg-red-700'
-                        : 'bg-green-600 hover:bg-green-700'
-                    } disabled:opacity-50`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      clinicMeta.doctor_available ? 'bg-green-500' : 'bg-gray-200'
+                    }`}
                   >
-                    {clinicMeta.doctor_available ? 'Set Unavailable' : 'Set Available'}
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        clinicMeta.doctor_available ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
                   </button>
                 </div>
               </div>
 
               {/* Current Token */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                  Current Token
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold text-primary">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between transition-shadow hover:shadow-md">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                    Current Token
+                  </h3>
+                </div>
+                
+                <div className="flex items-end justify-between">
+                  <span className="text-4xl font-bold text-gray-900">
                     {clinicMeta.current_token}
                   </span>
-                  <div className="space-x-2">
-                    <button
-                      onClick={advanceToken}
-                      disabled={updating || clinicMeta.current_token >= tokens.length}
-                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm disabled:opacity-50"
-                    >
-                      Advance
-                    </button>
+                  <div className="flex gap-2">
                     <button
                       onClick={resetCurrentToken}
                       disabled={updating}
-                      className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm disabled:opacity-50"
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Reset to 0"
                     >
-                      Reset
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={advanceToken}
+                      disabled={updating || clinicMeta.current_token >= tokens.length}
+                      className="px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                    >
+                      Next
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* Daily Limit */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                  Daily Limit
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-gray-800">
-                    {tokens.length} / {clinicMeta.daily_limit}
-                  </span>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between transition-shadow hover:shadow-md">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                    Daily Limit
+                  </h3>
                   <button
                     onClick={() => setShowLimitModal(true)}
-                    className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm"
+                    className="text-xs text-primary hover:text-blue-700 font-medium"
                   >
-                    Update
+                    Edit
                   </button>
                 </div>
-                <div className="mt-2">
-                  <div className="bg-gray-200 rounded-full h-2">
+                
+                <div>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-2xl font-bold text-gray-900">{tokens.length}</span>
+                    <span className="text-sm text-gray-500">/ {clinicMeta.daily_limit}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                     <div 
-                      className="bg-blue-600 h-2 rounded-full" 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        tokens.length >= clinicMeta.daily_limit ? 'bg-red-500' : 'bg-primary'
+                      }`}
                       style={{ width: `${Math.min((tokens.length / clinicMeta.daily_limit) * 100, 100)}%` }}
                     ></div>
                   </div>
@@ -258,38 +274,49 @@ const AdminDashboard = () => {
               </div>
 
               {/* Quick Actions */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between transition-shadow hover:shadow-md">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
                   Quick Actions
                 </h3>
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => window.location.href = '/admin/book'}
-                    className="w-full px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm"
+                    className="flex flex-col items-center justify-center p-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
                   >
-                    Book Token
+                    <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span className="text-xs font-medium">Book</span>
                   </button>
                   <button
                     onClick={deleteAllTokens}
                     disabled={updating || tokens.length === 0}
-                    className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50"
+                    className="flex flex-col items-center justify-center p-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                   >
-                    Clear All
+                    <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span className="text-xs font-medium">Clear</span>
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Token Lists */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
               {/* Upcoming Tokens */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Upcoming Tokens ({upcomingTokens.length})
-                </h3>
-                <div className="max-h-96 overflow-y-auto">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Upcoming Queue
+                  </h3>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    {upcomingTokens.length}
+                  </span>
+                </div>
+                <div className="p-6 max-h-[600px] overflow-y-auto custom-scrollbar">
                   {upcomingTokens.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {upcomingTokens.map((token) => (
                         <TokenCard 
                           key={token.id} 
@@ -299,30 +326,45 @@ const AdminDashboard = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center text-gray-500 py-8">
-                      <p>No upcoming tokens</p>
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-500 font-medium">No upcoming tokens</p>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Completed Tokens */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Completed Tokens ({completedTokens.length})
-                </h3>
-                <div className="max-h-96 overflow-y-auto">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Completed
+                  </h3>
+                  <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    {completedTokens.length}
+                  </span>
+                </div>
+                <div className="p-6 max-h-[600px] overflow-y-auto custom-scrollbar">
                   {completedTokens.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {completedTokens.reverse().map((token) => (
-                        <div key={token.id} className="bg-gray-50 rounded-lg p-3 opacity-75">
+                        <div key={token.id} className="opacity-60 grayscale transition-all hover:opacity-100 hover:grayscale-0">
                           <TokenCard token={token} />
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center text-gray-500 py-8">
-                      <p>No completed tokens yet</p>
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-500 font-medium">No completed tokens yet</p>
                     </div>
                   )}
                 </div>
@@ -336,47 +378,55 @@ const AdminDashboard = () => {
 
         {/* Update Daily Limit Modal */}
         {showLimitModal && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 transform transition-all">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Update Daily Token Limit
                 </h3>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    New Daily Limit
-                  </label>
+                <p className="text-sm text-gray-500">
+                  Set the maximum number of tokens that can be booked for today.
+                </p>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Daily Limit
+                </label>
+                <div className="relative">
                   <input
                     type="number"
                     min="1"
                     max="200"
                     value={newDailyLimit}
                     onChange={(e) => setNewDailyLimit(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Enter daily limit"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                    placeholder="Enter limit (1-200)"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Current: {clinicMeta.daily_limit} | Booked: {tokens.length}
-                  </p>
                 </div>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={() => {
-                      setShowLimitModal(false);
-                      setNewDailyLimit(clinicMeta.daily_limit.toString());
-                    }}
-                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={updateDailyLimit}
-                    disabled={updating}
-                    className="px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-md disabled:opacity-50"
-                  >
-                    {updating ? 'Updating...' : 'Update'}
-                  </button>
+                <div className="flex justify-between mt-2 text-xs text-gray-500">
+                  <span>Current: {clinicMeta.daily_limit}</span>
+                  <span>Booked: {tokens.length}</span>
                 </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowLimitModal(false);
+                    setNewDailyLimit(clinicMeta.daily_limit.toString());
+                  }}
+                  className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={updateDailyLimit}
+                  disabled={updating}
+                  className="px-5 py-2.5 bg-primary hover:bg-blue-700 text-white rounded-xl font-medium shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updating ? 'Updating...' : 'Update Limit'}
+                </button>
               </div>
             </div>
           </div>
