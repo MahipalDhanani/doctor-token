@@ -8,13 +8,14 @@ import TokenCard from './TokenCard';
 
 const TokenBoard = ({ user }) => {
   const { clinicMeta, updateClinicMeta } = useClinicMeta();
-  const { clinic_name, clinic_phone, doctor_name, doctor_degree } = useClinicSettings();
+  const { clinic_name, clinic_phone, doctor_name, doctor_degree, notification_sound_url } = useClinicSettings();
   const navigate = useNavigate();
   const { tokens, loading: tokensLoading, bookToken } = useTokens();
   const { userToken, loading: userTokenLoading } = useUserToken(user?.id);
   const [bookingToken, setBookingToken] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
 
   // Get next 10 tokens after current token
   const nextTokens = tokens
@@ -28,15 +29,12 @@ const TokenBoard = ({ user }) => {
     }
   }, [user]);
 
-  // Play sound when current token changes
+  // Request notification permission on mount
   useEffect(() => {
-    if (soundEnabled && clinicMeta.current_token > 0) {
-      voiceAnnouncement.setEnabled(true);
-      voiceAnnouncement.announceToken(clinicMeta.current_token);
-    } else {
-      voiceAnnouncement.setEnabled(false);
+    if ('Notification' in window && Notification.permission === 'default') {
+      setShowNotificationPrompt(true);
     }
-  }, [clinicMeta.current_token, soundEnabled]);
+  }, []);
 
   const loadUserProfile = async () => {
     try {
@@ -48,13 +46,46 @@ const TokenBoard = ({ user }) => {
   };
 
   const requestNotificationPermission = async () => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        toast.success('Notifications enabled!');
-      }
+    if (!('Notification' in window)) return;
+    
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      toast.success('Notifications enabled!');
+      setShowNotificationPrompt(false);
+      // Send a test notification
+      new Notification('Notifications Enabled', {
+        body: 'You will now receive updates when tokens change.',
+        icon: '/vite.svg' // Replace with app icon if available
+      });
     }
   };
+
+  const sendNotification = (tokenNumber) => {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    try {
+      new Notification(`Token #${tokenNumber} is Now Serving`, {
+        body: `Please proceed to the doctor's cabin.`,
+        icon: '/vite.svg',
+        vibrate: [200, 100, 200],
+        tag: 'token-update', // Prevents stacking multiple notifications
+        renotify: true
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  };
+
+  // Handle voice announcement and notifications when current token changes
+  useEffect(() => {
+    if (clinicMeta.current_token > 0 && isSoundEnabled) {
+      // Play sound (custom or default) and speak
+      voiceAnnouncement.announceToken(clinicMeta.current_token, notification_sound_url);
+      
+      // Send web notification
+      sendNotification(clinicMeta.current_token);
+    }
+  }, [clinicMeta.current_token, isSoundEnabled, notification_sound_url]);
 
   const handleBookToken = async () => {
     if (!user) {
@@ -103,13 +134,13 @@ const TokenBoard = ({ user }) => {
   };
 
   const toggleSound = () => {
-    setSoundEnabled(!soundEnabled);
-    voiceAnnouncement.setEnabled(soundEnabled);
-    toast.info(!soundEnabled ? 'Voice announcements enabled' : 'Voice announcements disabled');
+    setIsSoundEnabled(!isSoundEnabled);
+    voiceAnnouncement.setEnabled(!isSoundEnabled);
+    toast.info(!isSoundEnabled ? 'Voice announcements enabled' : 'Voice announcements disabled');
   };
 
   const testVoiceAnnouncement = () => {
-    if (soundEnabled) {
+    if (isSoundEnabled) {
       voiceAnnouncement.test(clinicMeta.current_token || 1);
       toast.info('Playing test announcement...');
     } else {
@@ -173,11 +204,11 @@ const TokenBoard = ({ user }) => {
               <button
                 onClick={toggleSound}
                 className={`p-1.5 rounded-full transition-colors ${
-                  soundEnabled ? 'bg-blue-100 text-primary' : 'bg-gray-100 text-gray-400'
+                  isSoundEnabled ? 'bg-blue-100 text-primary' : 'bg-gray-100 text-gray-400'
                 }`}
-                title={soundEnabled ? 'Mute voice announcements' : 'Enable voice announcements'}
+                title={isSoundEnabled ? 'Mute voice announcements' : 'Enable voice announcements'}
               >
-                {soundEnabled ? (
+                {isSoundEnabled ? (
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L4.146 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.146l4.237-3.793a1 1 0 011.617.793zM7.146 8.146L5 10.293V13.707L7.146 11.854A1 1 0 018 12.207V4.793a1 1 0 01-.854-.647zM15.354 6.646a.5.5 0 010 .708L14.207 8.5l1.147 1.146a.5.5 0 01-.708.708L13.5 9.207l-1.146 1.147a.5.5 0 01-.708-.708L12.793 8.5l-1.147-1.146a.5.5 0 01.708-.708L13.5 7.793l1.146-1.147a.5.5 0 01.708 0z" clipRule="evenodd" />
                   </svg>
@@ -189,7 +220,7 @@ const TokenBoard = ({ user }) => {
                 )}
               </button>
               
-              {soundEnabled && (
+              {isSoundEnabled && (
                 <button
                   onClick={testVoiceAnnouncement}
                   className="text-xs font-medium text-primary hover:text-blue-700"
@@ -258,7 +289,13 @@ const TokenBoard = ({ user }) => {
                               <span>Booking...</span>
                             </div>
                           ) : (
-                            'Book Token Now'
+                            <div className="flex items-center justify-center gap-2">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l2 2 4-4" />
+                              </svg>
+                              <span>Book Token Now</span>
+                            </div>
                           )}
                         </button>
                         {tokens.length >= clinicMeta.daily_limit && (

@@ -178,17 +178,17 @@ const AdminDashboard = () => {
           {/* Control Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
               {/* Doctor Availability */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between transition-shadow hover:shadow-md">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between transition-shadow hover:shadow-md h-full">
+                <div className="flex justify-between items-start mb-6">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                     Availability
                   </h3>
-                  <div className={`w-3 h-3 rounded-full ${clinicMeta.doctor_available ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <div className={`w-2.5 h-2.5 rounded-full ${clinicMeta.doctor_available ? 'bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-red-300'}`}></div>
                 </div>
                 
                 <div className="flex items-center justify-between mt-auto">
-                  <span className={`text-lg font-bold ${
-                    clinicMeta.doctor_available ? 'text-green-700' : 'text-red-700'
+                  <span className={`text-xl font-bold tracking-tight ${
+                    clinicMeta.doctor_available ? 'text-green-600' : 'text-red-600'
                   }`}>
                     {clinicMeta.doctor_available ? 'Online' : 'Offline'}
                   </span>
@@ -196,12 +196,12 @@ const AdminDashboard = () => {
                   <button
                     onClick={toggleDoctorAvailability}
                     disabled={updating}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                      clinicMeta.doctor_available ? 'bg-green-500' : 'bg-gray-200'
+                    className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      clinicMeta.doctor_available ? 'bg-emerald-500' : 'bg-gray-200'
                     }`}
                   >
                     <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      className={`pointer-events-none absolute top-0 inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                         clinicMeta.doctor_available ? 'translate-x-5' : 'translate-x-0'
                       }`}
                     />
@@ -284,7 +284,8 @@ const AdminDashboard = () => {
                     className="flex flex-col items-center justify-center p-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
                   >
                     <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l2 2 4-4" />
                     </svg>
                     <span className="text-xs font-medium">Book</span>
                   </button>

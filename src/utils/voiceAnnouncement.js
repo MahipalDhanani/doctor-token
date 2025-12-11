@@ -1,3 +1,5 @@
+import { toast } from 'react-toastify';
+
 // Voice Announcement Utility for Token Management System
 
 class VoiceAnnouncement {
@@ -18,19 +20,95 @@ class VoiceAnnouncement {
     }
   }
 
+  // ... (keep existing methods)
+
+  // Announce token number
+  announceToken(tokenNumber, soundUrl = null) {
+    if (!this.isEnabled()) {
+      console.log('Voice announcements disabled');
+      return;
+    }
+
+    // Cancel any ongoing speech
+    speechSynthesis.cancel();
+
+    const speak = () => {
+      try {
+        const text = `Token number ${tokenNumber}`;
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // Apply settings
+        utterance.rate = this.settings.rate;
+        utterance.pitch = this.settings.pitch;
+        utterance.volume = this.settings.volume;
+        utterance.lang = this.settings.lang;
+
+        // Use preferred voice if available
+        if (this.preferredVoice && this.voicesLoaded) {
+          utterance.voice = this.preferredVoice;
+        }
+
+        // Add event listeners for debugging
+        utterance.onstart = () => {
+          console.log(`Voice announcement started: "${text}"`);
+        };
+
+        utterance.onend = () => {
+          console.log(`Voice announcement completed: "${text}"`);
+        };
+
+        utterance.onerror = (event) => {
+          console.error('Voice announcement error:', event.error);
+          // Fallback to beep sound if no custom sound was played
+          if (!soundUrl) this.playBeepSound();
+        };
+
+        // Speak the announcement
+        speechSynthesis.speak(utterance);
+
+      } catch (error) {
+        console.error('Error in voice announcement:', error);
+        if (!soundUrl) this.playBeepSound();
+      }
+    };
+
+    if (soundUrl) {
+      const audio = new Audio(soundUrl);
+      audio.onended = () => {
+        speak();
+      };
+      audio.onerror = (e) => {
+        console.error('Error playing custom sound:', e);
+        speak(); // Fallback to speech immediately
+      };
+      audio.play().catch(e => {
+        console.error('Audio play failed (interaction needed?):', e);
+        if (e.name === 'NotAllowedError') {
+          toast.warn('Click anywhere to enable audio announcements', {
+            autoClose: 3000,
+            toastId: 'audio-permission' // Prevent duplicates
+          });
+        }
+        speak();
+      });
+    } else {
+      speak();
+    }
+  }
+
   // Initialize and load available voices
   initializeVoices() {
     const loadVoices = () => {
       const voices = speechSynthesis.getVoices();
       if (voices.length > 0) {
         this.voicesLoaded = true;
-        
+
         // Find preferred English voice
-        this.preferredVoice = voices.find(voice => 
-          voice.lang.startsWith('en') && 
+        this.preferredVoice = voices.find(voice =>
+          voice.lang.startsWith('en') &&
           (voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.default)
         ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-        
+
         console.log('Voice loaded:', this.preferredVoice?.name || 'Default');
       }
     };
@@ -55,51 +133,70 @@ class VoiceAnnouncement {
   }
 
   // Announce token number
-  announceToken(tokenNumber) {
+  announceToken(tokenNumber, soundUrl = null) {
     if (!this.isEnabled()) {
       console.log('Voice announcements disabled');
       return;
     }
 
-    try {
-      // Cancel any ongoing speech
-      speechSynthesis.cancel();
+    // Cancel any ongoing speech
+    speechSynthesis.cancel();
 
-      const text = `Token number ${tokenNumber}`;
-      const utterance = new SpeechSynthesisUtterance(text);
-      
-      // Apply settings
-      utterance.rate = this.settings.rate;
-      utterance.pitch = this.settings.pitch;
-      utterance.volume = this.settings.volume;
-      utterance.lang = this.settings.lang;
-      
-      // Use preferred voice if available
-      if (this.preferredVoice && this.voicesLoaded) {
-        utterance.voice = this.preferredVoice;
+    const speak = () => {
+      try {
+        const text = `Token number ${tokenNumber}`;
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // Apply settings
+        utterance.rate = this.settings.rate;
+        utterance.pitch = this.settings.pitch;
+        utterance.volume = this.settings.volume;
+        utterance.lang = this.settings.lang;
+
+        // Use preferred voice if available
+        if (this.preferredVoice && this.voicesLoaded) {
+          utterance.voice = this.preferredVoice;
+        }
+
+        // Add event listeners for debugging
+        utterance.onstart = () => {
+          console.log(`Voice announcement started: "${text}"`);
+        };
+
+        utterance.onend = () => {
+          console.log(`Voice announcement completed: "${text}"`);
+        };
+
+        utterance.onerror = (event) => {
+          console.error('Voice announcement error:', event.error);
+          // Fallback to beep sound if no custom sound was played
+          if (!soundUrl) this.playBeepSound();
+        };
+
+        // Speak the announcement
+        speechSynthesis.speak(utterance);
+
+      } catch (error) {
+        console.error('Error in voice announcement:', error);
+        if (!soundUrl) this.playBeepSound();
       }
+    };
 
-      // Add event listeners for debugging
-      utterance.onstart = () => {
-        console.log(`Voice announcement started: "${text}"`);
+    if (soundUrl) {
+      const audio = new Audio(soundUrl);
+      audio.onended = () => {
+        speak();
       };
-
-      utterance.onend = () => {
-        console.log(`Voice announcement completed: "${text}"`);
+      audio.onerror = (e) => {
+        console.error('Error playing custom sound:', e);
+        speak(); // Fallback to speech immediately
       };
-
-      utterance.onerror = (event) => {
-        console.error('Voice announcement error:', event.error);
-        // Fallback to beep sound
-        this.playBeepSound();
-      };
-
-      // Speak the announcement
-      speechSynthesis.speak(utterance);
-
-    } catch (error) {
-      console.error('Error in voice announcement:', error);
-      this.playBeepSound();
+      audio.play().catch(e => {
+        console.error('Audio play failed (interaction needed?):', e);
+        speak();
+      });
+    } else {
+      speak();
     }
   }
 

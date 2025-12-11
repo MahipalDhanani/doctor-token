@@ -283,7 +283,7 @@ export const useClinicSettings = () => {
         const { data, error } = await supabase
           .from('settings')
           .select('*')
-          .in('key', ['clinic_name', 'clinic_phone', 'doctor_name', 'doctor_degree']);
+          .in('key', ['clinic_name', 'clinic_phone', 'doctor_name', 'doctor_degree', 'notification_sound_url']);
 
         if (error) throw error;
 
@@ -297,6 +297,7 @@ export const useClinicSettings = () => {
           doctor_name: settingsMap.doctor_name || '',
           doctor_degree: settingsMap.doctor_degree || '',
           clinic_phone: settingsMap.clinic_phone || '',
+          notification_sound_url: settingsMap.notification_sound_url || '',
           loading: false
         });
       } catch (error) {
