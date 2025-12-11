@@ -18,6 +18,8 @@ class VoiceAnnouncement {
     if ('speechSynthesis' in window) {
       this.initializeVoices();
     }
+
+    this.currentAudio = null;
   }
 
   // ... (keep existing methods)
@@ -29,8 +31,8 @@ class VoiceAnnouncement {
       return;
     }
 
-    // Cancel any ongoing speech
-    speechSynthesis.cancel();
+    // Stop any currently playing audio or speech
+    this.stop();
 
     const speak = () => {
       try {
@@ -73,15 +75,17 @@ class VoiceAnnouncement {
     };
 
     if (soundUrl) {
-      const audio = new Audio(soundUrl);
-      audio.onended = () => {
+      this.currentAudio = new Audio(soundUrl);
+      this.currentAudio.onended = () => {
+        this.currentAudio = null;
         speak();
       };
-      audio.onerror = (e) => {
+      this.currentAudio.onerror = (e) => {
         console.error('Error playing custom sound:', e);
+        this.currentAudio = null;
         speak(); // Fallback to speech immediately
       };
-      audio.play().catch(e => {
+      this.currentAudio.play().catch(e => {
         console.error('Audio play failed (interaction needed?):', e);
         if (e.name === 'NotAllowedError') {
           toast.warn('Click anywhere to enable audio announcements', {
@@ -89,6 +93,7 @@ class VoiceAnnouncement {
             toastId: 'audio-permission' // Prevent duplicates
           });
         }
+        this.currentAudio = null;
         speak();
       });
     } else {
@@ -251,6 +256,11 @@ class VoiceAnnouncement {
   stop() {
     if ('speechSynthesis' in window) {
       speechSynthesis.cancel();
+    }
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.currentAudio = null;
     }
   }
 }

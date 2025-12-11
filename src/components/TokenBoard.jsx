@@ -17,6 +17,7 @@ const TokenBoard = ({ user }) => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
 
+
   // Get next 10 tokens after current token
   const nextTokens = tokens
     .filter(token => token.token_number > clinicMeta.current_token)

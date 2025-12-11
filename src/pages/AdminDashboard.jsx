@@ -202,7 +202,7 @@ const AdminDashboard = () => {
                   >
                     <span
                       className={`pointer-events-none absolute top-0 inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        clinicMeta.doctor_available ? 'translate-x-5' : 'translate-x-0'
+                        clinicMeta.doctor_available ? 'translate-x-0' : '-translate-x-5'
                       }`}
                     />
                   </button>

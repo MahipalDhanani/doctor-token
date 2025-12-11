@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const Header = ({ user, isAdmin, toggleSidebar, sidebarOpen }) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
@@ -31,22 +40,48 @@ const Header = ({ user, isAdmin, toggleSidebar, sidebarOpen }) => {
 
           {/* Right side - User menu */}
           <div className="hidden lg:flex items-center space-x-4">
+            {/* Real-time Clock */}
+            <div className="text-right mr-2">
+              <p className="text-xs text-gray-500 font-medium">
+                {currentTime.toLocaleDateString('en-US', { 
+                  weekday: 'short', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })}
+              </p>
+              <p className="text-sm font-bold text-gray-700 font-mono">
+                {currentTime.toLocaleTimeString('en-US', { 
+                  hour: '2-digit', 
+                  minute: '2-digit', 
+                  second: '2-digit',
+                  hour12: true 
+                })}
+              </p>
+            </div>
+                <span>||</span>
             {user ? (
               <>
                 <span className="text-sm text-gray-600">
                   Hello, {user.user_metadata.first_name} {user.user_metadata.last_name}
                 </span>
+                <span>||</span>
+
                 {isAdmin && (
+                  <>
                   <span className="bg-primary text-white px-2 py-1 rounded text-xs">
                     Admin
                   </span>
+                  <span>||</span>
+                  </>
                 )}
+
                 <Link
                   to="/profile"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Profile
                 </Link>
+                <span>||</span>
                 <button
                   onClick={handleSignOut}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
