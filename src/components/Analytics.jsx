@@ -16,10 +16,25 @@ const Analytics = () => {
   const loadAnalytics = async () => {
     try {
       const today = getCurrentDateIST();
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const monthAgo = new Date();
-      monthAgo.setDate(monthAgo.getDate() - 30);
+
+      // Generate last 7 days
+      const last7Days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        last7Days.push(d.toISOString().split('T')[0]);
+      }
+
+      // Generate last 30 days
+      const last30Days = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        last30Days.push(d.toISOString().split('T')[0]);
+      }
+
+      const weekAgo = last7Days[0];
+      const monthAgo = last30Days[0];
 
       // Today's data
       const { data: todayTokens } = await supabase
@@ -38,23 +53,31 @@ const Analytics = () => {
       const { data: weeklyTokens } = await supabase
         .from('tokens')
         .select('booking_date')
-        .gte('booking_date', weekAgo.toISOString().split('T')[0])
+        .gte('booking_date', weekAgo)
         .order('booking_date');
 
       // Monthly data
       const { data: monthlyTokens } = await supabase
         .from('tokens')
         .select('booking_date')
-        .gte('booking_date', monthAgo.toISOString().split('T')[0])
+        .gte('booking_date', monthAgo)
         .order('booking_date');
 
       // Process data
       const currentToken = clinicMeta?.current_token || 0;
       const todayTotal = todayTokens?.length || 0;
 
-      // Group weekly data by date
-      const weeklyByDate = groupByDate(weeklyTokens || []);
-      const monthlyByDate = groupByDate(monthlyTokens || []);
+      // Fill weekly data
+      const weeklyData = last7Days.map(date => ({
+        date,
+        count: weeklyTokens?.filter(t => t.booking_date === date).length || 0
+      }));
+
+      // Fill monthly data
+      const monthlyData = last30Days.map(date => ({
+        date,
+        count: monthlyTokens?.filter(t => t.booking_date === date).length || 0
+      }));
 
       setAnalytics({
         today: {
@@ -64,11 +87,11 @@ const Analytics = () => {
         },
         thisWeek: {
           total: weeklyTokens?.length || 0,
-          daily: weeklyByDate
+          daily: weeklyData
         },
         thisMonth: {
           total: monthlyTokens?.length || 0,
-          daily: monthlyByDate
+          daily: monthlyData
         },
         loading: false
       });
@@ -79,28 +102,33 @@ const Analytics = () => {
   };
 
   const groupByDate = (tokens) => {
-    const grouped = tokens.reduce((acc, token) => {
-      const date = token.booking_date;
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
-    }, {});
-
-    return Object.entries(grouped).map(([date, count]) => ({
-      date,
-      count
-    }));
+    // Deprecated, logic moved to loadAnalytics
+    return [];
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-IN', {
+      month: 'short',
+      day: 'numeric'
     });
+  };
+
+  const getDayName = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', { weekday: 'short' });
   };
 
   const getMaxCount = (data) => {
     return Math.max(...data.map(item => item.count), 1);
+  };
+
+  // Helper to get grid offset for the first day of the month view
+  const getGridOffset = (dateString) => {
+    if (!dateString) return 0;
+    const date = new Date(dateString + 'T12:00:00'); // Use noon to avoid timezone shifts
+    const day = date.getDay(); // 0 = Sun, 1 = Mon
+    return day === 0 ? 6 : day - 1; // Convert to Mon=0, ..., Sun=6
   };
 
   if (analytics.loading) {
@@ -149,87 +177,84 @@ const Analytics = () => {
           <h3 className="text-xl font-semibold text-gray-800 mb-4">
             Last 7 Days ({analytics.thisWeek.total} total)
           </h3>
-          {analytics.thisWeek.daily.length > 0 ? (
-            <div className="space-y-3">
-              {analytics.thisWeek.daily.map((day) => {
-                const maxCount = getMaxCount(analytics.thisWeek.daily);
-                const percentage = (day.count / maxCount) * 100;
-                
-                return (
-                  <div key={day.date} className="flex items-center space-x-3">
-                    <div className="w-16 text-sm text-gray-600">
-                      {formatDate(day.date)}
-                    </div>
-                    <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
-                      <div
-                        className="bg-blue-500 h-6 rounded-full flex items-center justify-end pr-2"
-                        style={{ width: `${Math.max(percentage, 5)}%` }}
-                      >
-                        <span className="text-white text-xs font-medium">
-                          {day.count}
-                        </span>
-                      </div>
+          <div className="space-y-3">
+            {analytics.thisWeek.daily.map((day) => {
+              const maxCount = getMaxCount(analytics.thisWeek.daily);
+              const percentage = (day.count / maxCount) * 100;
+
+              return (
+                <div key={day.date} className="flex items-center space-x-3">
+                  <div className="w-16 text-sm text-gray-600">
+                    {formatDate(day.date)}
+                  </div>
+                  <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
+                    <div
+                      className="bg-blue-500 h-6 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
+                      style={{ width: `${Math.max(percentage, 5)}%` }}
+                    >
+                      <span className="text-white text-xs font-medium">
+                        {day.count}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center text-gray-500 py-8">
-              <p>No data available for the last 7 days</p>
-            </div>
-          )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Monthly Overview */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">
-            Last 30 Days ({analytics.thisMonth.total} total)
-          </h3>
-          {analytics.thisMonth.daily.length > 0 ? (
-            <div className="space-y-2">
-              <div className="grid grid-cols-7 gap-1 text-xs text-gray-600 mb-2">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                  <div key={day} className="text-center font-medium">{day}</div>
-                ))}
-              </div>
-              <div className="grid grid-cols-7 gap-1">
-                {analytics.thisMonth.daily.slice(0, 28).map((day) => {
-                  const maxCount = getMaxCount(analytics.thisMonth.daily);
-                  const intensity = day.count / maxCount;
-                  const bgColor = intensity > 0.7 ? 'bg-blue-600' :
-                                  intensity > 0.4 ? 'bg-blue-400' :
-                                  intensity > 0.1 ? 'bg-blue-200' : 'bg-gray-100';
-                  
-                  return (
-                    <div
-                      key={day.date}
-                      className={`w-8 h-8 rounded ${bgColor} flex items-center justify-center text-xs font-medium ${
-                        intensity > 0.4 ? 'text-white' : 'text-gray-700'
-                      }`}
-                      title={`${formatDate(day.date)}: ${day.count} tokens`}
-                    >
-                      {day.count > 0 ? day.count : ''}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex justify-between items-center mt-4 text-xs text-gray-500">
-                <span>Less</span>
-                <div className="flex space-x-1">
-                  <div className="w-3 h-3 bg-gray-100 rounded"></div>
-                  <div className="w-3 h-3 bg-blue-200 rounded"></div>
-                  <div className="w-3 h-3 bg-blue-400 rounded"></div>
-                  <div className="w-3 h-3 bg-blue-600 rounded"></div>
-                </div>
-                <span>More</span>
-              </div>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-gray-800">
+              Last 30 Days ({analytics.thisMonth.total} total)
+            </h3>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="flex items-center gap-1"><div className="w-3 h-3 bg-gray-100 rounded"></div> 0</span>
+              <span className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-200 rounded"></div> Low</span>
+              <span className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-600 rounded"></div> High</span>
             </div>
-          ) : (
-            <div className="text-center text-gray-500 py-8">
-              <p>No data available for the last 30 days</p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="grid grid-cols-7 gap-1 text-xs text-gray-600 mb-2 border-b pb-2">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                <div key={day} className="text-center font-bold">{day}</div>
+              ))}
             </div>
-          )}
+            <div className="grid grid-cols-7 gap-2">
+              {/* Padding for start of week */}
+              {[...Array(getGridOffset(analytics.thisMonth.daily[0]?.date || new Date()))].map((_, i) => (
+                <div key={`pad-${i}`} className="h-10"></div>
+              ))}
+
+              {analytics.thisMonth.daily.map((day) => {
+                const maxCount = getMaxCount(analytics.thisMonth.daily);
+                const intensity = day.count / maxCount;
+                const bgColor = day.count === 0 ? 'bg-gray-100' :
+                  intensity > 0.7 ? 'bg-blue-600' :
+                    intensity > 0.4 ? 'bg-blue-400' : 'bg-blue-200';
+                const textColor = day.count === 0 ? 'text-gray-400' :
+                  intensity > 0.4 ? 'text-white' : 'text-blue-900';
+
+                // Safe date parsing
+                const dayNumber = parseInt(day.date.split('-')[2]);
+
+                return (
+                  <div
+                    key={day.date}
+                    className={`h-10 rounded-lg ${bgColor} flex flex-col items-center justify-center text-xs transition-all hover:scale-105 cursor-default border border-transparent hover:border-blue-300`}
+                    title={`${formatDate(day.date)}: ${day.count} tokens`}
+                  >
+                    <span className={`font-bold ${textColor}`}>{dayNumber}</span>
+                    {day.count > 0 && (
+                      <span className={`text-[10px] ${textColor}`}>{day.count}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -255,12 +280,12 @@ const Analytics = () => {
               {analytics.thisWeek.daily.slice(-10).reverse().map((day) => {
                 const date = new Date(day.date);
                 const dayOfWeek = date.toLocaleDateString('en-IN', { weekday: 'long' });
-                const fullDate = date.toLocaleDateString('en-IN', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
+                const fullDate = date.toLocaleDateString('en-IN', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
                 });
-                
+
                 return (
                   <tr key={day.date}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

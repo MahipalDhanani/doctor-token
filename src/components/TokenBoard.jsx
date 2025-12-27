@@ -78,13 +78,20 @@ const TokenBoard = ({ user }) => {
     }
   };
 
+  const lastAnnouncedTokenRef = React.useRef(null);
+
   // Handle voice announcement and notifications when current token changes
   useEffect(() => {
-    if (clinicMeta.current_token > 0 && isSoundEnabled) {
-      // Play sound (custom or default) and speak
-      voiceAnnouncement.announceToken(clinicMeta.current_token, notification_sound_url);
+    if (clinicMeta.current_token > 0 && clinicMeta.current_token !== lastAnnouncedTokenRef.current) {
+      // Update ref to prevent duplicate alerts for the same token
+      lastAnnouncedTokenRef.current = clinicMeta.current_token;
 
-      // Send web notification
+      // Play sound if enabled
+      if (isSoundEnabled) {
+        voiceAnnouncement.announceToken(clinicMeta.current_token, notification_sound_url);
+      }
+
+      // Always send web notification if permissions granted
       sendNotification(clinicMeta.current_token);
     }
   }, [clinicMeta.current_token, isSoundEnabled, notification_sound_url]);
@@ -180,8 +187,8 @@ const TokenBoard = ({ user }) => {
         {/* Status Bar */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${clinicMeta.doctor_available
-              ? 'bg-green-50 border-green-200 text-green-700'
-              : 'bg-red-50 border-red-200 text-red-700'
+            ? 'bg-green-50 border-green-200 text-green-700'
+            : 'bg-red-50 border-red-200 text-red-700'
             }`}>
             <div className={`w-2.5 h-2.5 rounded-full ${clinicMeta.doctor_available ? 'bg-green-500' : 'bg-red-500'
               } animate-pulse`}></div>
