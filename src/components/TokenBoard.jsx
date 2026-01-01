@@ -12,7 +12,7 @@ const TokenBoard = ({ user }) => {
   const { clinic_name, clinic_phone, doctor_name, doctor_degree, notification_sound_url } = useClinicSettings();
   const navigate = useNavigate();
   const { tokens, loading: tokensLoading, bookToken } = useTokens();
-  const { userToken, loading: userTokenLoading } = useUserToken(user?.id);
+  const { userToken, loading: userTokenLoading, setUserToken } = useUserToken(user?.id);
   const [bookingToken, setBookingToken] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
@@ -134,6 +134,7 @@ const TokenBoard = ({ user }) => {
         address: userProfile.address
       });
 
+      setUserToken(tokenData);
       toast.success(`Token ${tokenData.token_number} booked successfully!`);
     } catch (error) {
       toast.error('Error booking token: ' + error.message);

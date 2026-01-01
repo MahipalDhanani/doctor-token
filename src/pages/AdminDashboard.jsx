@@ -35,6 +35,24 @@ const AdminDashboard = () => {
     }
   };
 
+  const previousToken = async () => {
+    if (clinicMeta.current_token <= 0) {
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      await updateClinicMeta({
+        current_token: clinicMeta.current_token - 1,
+      });
+      toast.success(`Token reverted to ${clinicMeta.current_token - 1}`);
+    } catch (error) {
+      toast.error("Error reverting token: " + error.message);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const advanceToken = async () => {
     if (clinicMeta.current_token >= tokens.length) {
       toast.warning("No more tokens to advance");
@@ -164,21 +182,19 @@ const AdminDashboard = () => {
           <div className="flex bg-gray-100 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab("dashboard")}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                activeTab === "dashboard"
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "dashboard"
                   ? "bg-white text-primary shadow-sm"
                   : "text-gray-500 hover:text-gray-900"
-              }`}
+                }`}
             >
               Dashboard
             </button>
             <button
               onClick={() => setActiveTab("analytics")}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                activeTab === "analytics"
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === "analytics"
                   ? "bg-white text-primary shadow-sm"
                   : "text-gray-500 hover:text-gray-900"
-              }`}
+                }`}
             >
               Analytics
             </button>
@@ -201,21 +217,19 @@ const AdminDashboard = () => {
                   Availability
                 </h3>
                 <div
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    clinicMeta.doctor_available
+                  className={`w-2.5 h-2.5 rounded-full ${clinicMeta.doctor_available
                       ? "bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
                       : "bg-red-300"
-                  }`}
+                    }`}
                 ></div>
               </div>
 
               <div className="flex items-center justify-between mt-auto">
                 <span
-                  className={`text-xl font-bold tracking-tight ${
-                    clinicMeta.doctor_available
+                  className={`text-xl font-bold tracking-tight ${clinicMeta.doctor_available
                       ? "text-green-600"
                       : "text-red-600"
-                  }`}
+                    }`}
                 >
                   {clinicMeta.doctor_available ? "Available" : "Unavailable"}
                 </span>
@@ -223,18 +237,16 @@ const AdminDashboard = () => {
                 <button
                   onClick={toggleDoctorAvailability}
                   disabled={updating}
-                  className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    clinicMeta.doctor_available
+                  className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${clinicMeta.doctor_available
                       ? "bg-emerald-500"
                       : "bg-red-500"
-                  }`}
+                    }`}
                 >
                   <span
-                    className={`pointer-events-none absolute top-0 inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      clinicMeta.doctor_available
+                    className={`pointer-events-none absolute top-0 inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${clinicMeta.doctor_available
                         ? "translate-x-5"
                         : "translate-x-0"
-                    }`}
+                      }`}
                   />
                 </button>
               </div>
@@ -274,6 +286,13 @@ const AdminDashboard = () => {
                     </svg>
                   </button>
                   <button
+                    onClick={previousToken}
+                    disabled={updating || clinicMeta.current_token <= 0}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                  >
+                    Prev
+                  </button>
+                  <button
                     onClick={advanceToken}
                     disabled={
                       updating || clinicMeta.current_token >= tokens.length
@@ -311,11 +330,10 @@ const AdminDashboard = () => {
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      tokens.length >= clinicMeta.daily_limit
+                    className={`h-full rounded-full transition-all duration-500 ${tokens.length >= clinicMeta.daily_limit
                         ? "bg-red-500"
                         : "bg-primary"
-                    }`}
+                      }`}
                     style={{
                       width: `${Math.min(
                         (tokens.length / clinicMeta.daily_limit) * 100,

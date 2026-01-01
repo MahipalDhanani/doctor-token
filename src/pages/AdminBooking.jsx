@@ -197,22 +197,64 @@ const AdminBooking = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select User *
                   </label>
-                  <select
-                    value={selectedUser}
-                    onChange={(e) => setSelectedUser(e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Choose a user...</option>
-                    {filteredUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.first_name} {user.last_name} - {user.email} - {user.mobile}
-                      </option>
-                    ))}
-                  </select>
-                  {filteredUsers.length === 0 && searchTerm && (
-                    <p className="text-sm text-gray-500 mt-1">No users found matching your search.</p>
-                  )}
+                  <div className="overflow-x-auto border border-gray-300 rounded-md">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Mobile
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredUsers.map((user) => {
+                          const isSelected = selectedUser === user.id;
+                          return (
+                            <tr
+                              key={user.id}
+                              className={`hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50' : ''}`}
+                              onClick={() => setSelectedUser(user.id)}
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {user.first_name} {user.last_name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {user.mobile}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedUser(user.id);
+                                  }}
+                                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${isSelected
+                                      ? 'bg-green-100 text-green-800 border border-green-200'
+                                      : 'bg-primary text-white hover:bg-blue-700'
+                                    }`}
+                                >
+                                  {isSelected ? 'Selected' : 'Select'}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {filteredUsers.length === 0 && (
+                          <tr>
+                            <td colSpan="3" className="px-6 py-4 text-center text-sm text-gray-500">
+                              {searchTerm ? 'No users found matching your search.' : 'No users available.'}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             ) : (

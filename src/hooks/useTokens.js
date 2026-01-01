@@ -264,7 +264,7 @@ export const useUserToken = (userId) => {
     fetchUserToken();
   }, [userId]);
 
-  return { userToken, loading };
+  return { userToken, loading, setUserToken };
 };
 
 // Hook for fetching clinic settings (name, phone, doctor_name, doctor_degree)
