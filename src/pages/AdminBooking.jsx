@@ -29,7 +29,7 @@ const AdminBooking = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, email, mobile')
+        .select('id, first_name, last_name, mobile')
         .order('first_name');
 
       if (error) throw error;
@@ -92,7 +92,7 @@ const AdminBooking = () => {
       const tokenData = await bookToken(userDetails, true); // true for admin booking
 
       toast.success(`Token ${tokenData.token_number} booked successfully for ${userDetails.full_name}!`);
-      
+
       // Reset form
       if (bookingType === 'existing') {
         setSelectedUser('');
@@ -118,7 +118,7 @@ const AdminBooking = () => {
     const email = user.email?.toLowerCase() || '';
     const mobile = user.mobile || '';
     const search = searchTerm.toLowerCase();
-    
+
     return fullName.includes(search) || email.includes(search) || mobile.includes(search);
   });
 
